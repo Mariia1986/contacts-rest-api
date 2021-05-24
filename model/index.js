@@ -1,8 +1,8 @@
 const fs = require("fs/promises");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
-const contacts = require("./contacts.json");
 const contactPath = path.join(__dirname, "/contacts.json");
+
 
 const readData=async ()=>{
   const data = await fs.readFile(contactPath, "utf-8");
@@ -50,9 +50,6 @@ const updateContact = async (contactId, body) => {
   }
   return result
 }
-  
-
-
 
 
 module.exports = {
