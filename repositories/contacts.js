@@ -6,12 +6,12 @@ const listContacts = async () => {
 };
 
 const getContactById = async (contactId) => {
-  const result = await Contact.findOne({ _id: contactId })
+  const result = await Contact.findOne(contactId)
   return result
 };
 
 const removeContact = async (contactId) => {
-  const result = await  Contact.findOneAndRemove({ _id: contactId })
+  const result = await  Contact.findOneAndRemove( contactId )
   return result
   
 };
@@ -23,16 +23,16 @@ const addContact = async (body) => {
 
 const updateContact = async (contactId, body) => {
   const result = await Contact.findOneAndUpdate(
-    { _id: contactId },
+     contactId ,
     { ...body },
     { new: true },
   )
   return result
 }
 
-const updateStatusContact=async (id, body)=> {
-  const newStatus = await Contact.findByIdAndUpdate(
-    { _id: id },
+const updateStatusContact=async (contactId, body)=> {
+  const newStatus = await Contact.findOneAndUpdate(
+    contactId,
     { ...body },
     { new: true }
   );
