@@ -1,8 +1,8 @@
 const Users = require("../repositories/users");
-const {HttpCode} = require("../helpers/constants");
-const jwt=require('jsonwebtoken')
-require('dotenv').config()
-const SECRET_KEY = process.env.SECRET_KEY
+const { HttpCode } = require("../helpers/constants");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const register = async (req, res, next) => {
   try {
@@ -14,11 +14,11 @@ const register = async (req, res, next) => {
         message: "Email is already used",
       });
     }
-    const {id,  email, subscribe } = await Users.create(req.body);
+    const { id, email, subscription } = await Users.create(req.body);
     return res.status(HttpCode.CREATE).json({
       status: "success",
       code: HttpCode.CREATE,
-      data: {id,  email, subscribe },
+      data: { id, email, subscription},
     });
   } catch (e) {
     next(e);
@@ -26,37 +26,96 @@ const register = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-    try {
-        const user = await Users.findByEmail(req.body.email);
-        const isValidPassword= await user?.isValidPassword(req.body.password)
-        if (!user|| !isValidPassword) {
-          return res.status(HttpCode.UNAUTHORIZATED).json({
-            status: "error",
-            code: HttpCode.UNAUTHORIZATED,
-            message: "Invalid credentials",
-          });
-        }
-       const id=user.id
-       const payload={id}
-       const token=jwt.sign(payload, SECRET_KEY,{expirensIn:'2h'})
-       await user.updateToken(id, token)
-       
-      } catch (e) {
-        next(e);
-      }
-};
-
-const logout = async (req, res, next) => {
   try {
-    const contacts = await Users.listContacts();
-    return res.json({ status: "success", code: 200, data: { contacts } });
+
+    const user = await Users.findByEmail(req.body.email);
+    const isValidPassword = await user?.isValidPassword(req.body.password);
+    if (!user || !isValidPassword) {
+      return res.status(HttpCode.UNAUTHORIZATED).json({
+        status: "error",
+        code: HttpCode.UNAUTHORIZATED,
+        message: "Invalid credentials",
+      });
+    }
+    const id = user.id;
+    const payload = { id };
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "2h" });
+    await Users.updateToken(id, token);
+    const {
+      _doc: { subscription },
+    } = user;
+
+    return res.json({
+      status: 'success',
+      code: HttpCode.OK,
+      message: 'You have logged in.',
+      token,
+      user: { subscription },
+    });
   } catch (e) {
     next(e);
   }
 };
 
+const logout = async (req, res, next) => {
+  try {
+    const id = req.user.id
+    await Users.updateToken(id, null);
+    return res.status(HttpCode.NO_CONTENT).json({});
+  } catch (e) {
+    next(e);
+  }
+};
+const current = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(HttpCode.UNAUTHORIZATED).json({
+        status: 'error',
+        code: HttpCode.UNAUTHORIZATED,
+        message: 'Not authorized.',
+      });
+    }
+
+    const { email, subscription } = req.user;
+
+    return res.status(HttpCode.OK).json({
+      status: 'success',
+      code: HttpCode.OK,
+      user: { email, subscription },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateSubscription = async (req, res, next) => {
+  try {
+    const id = req.user.id;
+    const updatedSubscription = await Users.updateSubscription(id, req.body);
+
+    if (!updatedSubscription) {
+      return res
+        .status(HttpCode.NOT_FOUND)
+        .json({ status: 'error', code: HttpCode.NOT_FOUND, message: 'Not found.' });
+    }
+    const { email, subscription } = updatedSubscription;
+    return res.json({
+      status: 'success',
+      code: HttpCode.OK,
+      message: 'Contact updated.',
+      payload: { email, subscription },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 module.exports = {
   register,
   login,
   logout,
+  current,
+  updateSubscription
+
 };

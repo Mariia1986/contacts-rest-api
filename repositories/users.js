@@ -8,20 +8,24 @@ const findByEmail = async(email)=>{
     return await User.findOne({email})
 }
 
-const create = async(body)=>{
+const create = async (body)=>{
     const user = new User(body)
-    return await user.save
+    return await user.save()
 }
 
-const updateToken= async (id,token)=>{
-    return await User.updateOne({_id:id},{token})
-}
+const updateToken = async (userId, token) => {
+    return await User.updateOne({ _id: userId }, { token })
+  }
+
+  
+  const updateSubscription = async (userId, body) => {
+    return await User.findByIdAndUpdate(userId, { ...body }, { new: true });
+  };
 
 module.exports={
     findById,
     findByEmail,
     create,
-    updateToken
-
-
+    updateToken,
+    updateSubscription
 }

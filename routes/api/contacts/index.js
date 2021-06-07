@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const ctrl = require("../../../controlers/contacts");
+const guard= require('../../../helpers/guard')
 
 const {
   validationCreateContacts,
@@ -14,14 +15,14 @@ router.use((req, res, next) => {
   next()
 })
 
-router.get('/', ctrl.listContacts).post('/', validationCreateContacts, ctrl.addContact)
+router.get('/', guard, ctrl.listContacts).post('/', guard, validationCreateContacts, ctrl.addContact)
 
 router
-  .get('/:id',  ctrl.getContactById)
-  .delete('/:id',  ctrl.removeContact)
-  .put('/:id',   validationUpdateContacts, ctrl.updateContact)
+  .get('/:id', guard, ctrl.getContactById)
+  .delete('/:id',guard,  ctrl.removeContact)
+  .put('/:id', guard,  validationUpdateContacts, ctrl.updateContact)
 
-router.patch('/:id/favorite',  validateUpdateStatus, ctrl.updateStatusContact)
+router.patch('/:id/favorite', guard,  validateUpdateStatus, ctrl.updateStatusContact)
 
 module.exports = router
 

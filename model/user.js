@@ -13,10 +13,7 @@ const userSchema = new Schema(
           type: String,
           required: [true, 'Email is required'],
           unique: true,
-          validate(value){
-              const re=/\S+@\S+\.S+/g
-              return re.test(String(value)).toLowerCase()
-          }
+         
         },
         subscription: {
           type: String,
@@ -28,10 +25,7 @@ const userSchema = new Schema(
           default: null,
         },
 
-        // owner: {
-        //     type: SchemaTypes.ObjectId,
-        //     ref: 'user',
-        //   }
+       
       }
 )
 

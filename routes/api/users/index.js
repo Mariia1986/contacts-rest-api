@@ -1,23 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const contrls = require("../../../controlers/users");
+const guard= require('../../../helpers/guard')
+const { validationNewUser, validationLoginUser, validationSubscription } = require('./validation');
 
-// const {
-//   validationCreateContacts,
-//   validationUpdateContacts,
-//   validateUpdateStatus,
-// } = require("./validation.js");
+router.post('/signup',validationNewUser, contrls.register)
+router.post('/login', validationLoginUser, contrls.login)
+router.post('/logout', guard, contrls.logout)
 
-
-router.use((req, res, next) => {
-  console.log(req.url)
-  next()
-})
-
-router.post('/register',contrls.register)
-router.post('/login', contrls.login)
-router.post('/logout', contrls.logout)
-
+router.get('/current', guard, contrls.current);
+router.patch('/', guard, validationSubscription, contrls.updateSubscription);
 module.exports = router
 
 
