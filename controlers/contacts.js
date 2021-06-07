@@ -1,13 +1,14 @@
 
 const Contacts = require('../repositories/contacts');
-
+const { HttpCode} = require('../helpers/constants');
 
 const  listContacts = async (req, res, next) => {
   
   try {
     const userId = req.user.id
-    const contacts = await Contacts.listContacts(userId)
-    return res.json({ status: 'success', code: 200, data: { contacts} })
+    const query = req.query;
+    const { docs: contacts, ...rest } = await Contacts.listContacts(userId,  query)
+    return res.json({ status: 'success', code: HttpCode.OK, payload: { contacts, ...rest } });
   } catch (e) {
     next(e)
   }
