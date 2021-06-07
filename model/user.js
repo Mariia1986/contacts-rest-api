@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose')
-const Subscription=require('../helpers/constants')
+const {Subscription}=require('../helpers/constants')
 const bcrypt=require('bcryptjs')
 const SALT_FAKTOR=8
 
