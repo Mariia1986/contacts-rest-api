@@ -10,6 +10,9 @@ router.post('/logout', guard, contrls.logout)
 
 router.get('/current', guard, contrls.current);
 router.patch('/', guard, validationSubscription, contrls.updateSubscription);
+router.patch('/avatars', guard,  ctrl.avatars)
+
+
 module.exports = router
 
 
