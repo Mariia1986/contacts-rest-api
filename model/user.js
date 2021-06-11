@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose')
 const {Subscription}=require('../helpers/constants')
+const gr = require('gravatar')
 const bcrypt=require('bcryptjs')
 const SALT_FAKTOR=8
 
@@ -20,6 +21,11 @@ const userSchema = new Schema(
           enum: [Subscription.STARTER, Subscription.PRO, Subscription.BUSSINES],
           default: Subscription.STARTER
         },
+        avatarURL: {
+          type: String,
+          default: function () {
+            return gr.url(this.email, { s: '250' }, true)
+          }},
         token: {
           type: String,
           default: null,
