@@ -113,7 +113,7 @@ const updateSubscription = async (req, res, next) => {
   }
 };
 
-const avatars = async (req, res, next) => {
+const avatarService = async (req, res, next) => {
   try {
     const id = req.user.id
     const uploads = new UploadAvatarService(process.env.AVATAR_OF_USERS)
@@ -141,6 +141,6 @@ module.exports = {
   logout,
   current,
   updateSubscription,
-  avatars
+  avatarService
 
 };
