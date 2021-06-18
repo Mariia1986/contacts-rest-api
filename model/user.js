@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose')
 const {Subscription}=require('../helpers/constants')
 const gr = require('gravatar')
+const {nanoid} = require('nanoid')
 const bcrypt=require('bcryptjs')
 const SALT_FAKTOR=8
 
@@ -30,7 +31,7 @@ const userSchema = new Schema(
           type: String,
           default: null,
         },
-        {
+        
           verify: {
             type: Boolean,
             default: false,
@@ -38,10 +39,11 @@ const userSchema = new Schema(
           verifyToken: {
             type: String,
             required: [true, 'Verify token is required'],
+            default: nanoid(),
           },
-        }
+        
 
-       
+      
       }
 )
 
