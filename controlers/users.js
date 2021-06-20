@@ -4,27 +4,45 @@ const fs = require('fs/promises')
 const path = require('path')
 const jwt = require("jsonwebtoken");
 const UploadAvatarService = require('../services/local-upload')
+const {
+ 
+  CreateSenderSendGrid,
+} = require('../services/email-sender')
+const EmailService = require('../services/email')
+
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const register = async (req, res, next) => {
   try {
     const user = await Users.findByEmail(req.body.email);
+   
     if (user) {
+     
       return res.status(HttpCode.CONFLICT).json({
         status: "error",
         code: HttpCode.CONFLICT,
         message: "Email is already used",
       });
     }
-    const { id, email, subscription,  avatarURL } = await Users.create(req.body);
+    const { id, email, subscription,  avatarURL,verifyToken } = await Users.create(req.body);
+    try {
+      const emailService = new EmailService(
+        process.env.NODE_ENV,
+        new CreateSenderSendGrid(),
+      )
+      await emailService.sendVerifyEmail(verifyToken, email)
+    } catch (error) {
+      console.log(error.message)
+    }
+
     return res.status(HttpCode.CREATE).json({
-      status: "success",
+      status: 'success',
       code: HttpCode.CREATE,
       data: { id, email, subscription, avatarURL},
-    });
+    })
   } catch (e) {
-    next(e);
+    next(e)
   }
 };
 
@@ -33,7 +51,7 @@ const login = async (req, res, next) => {
 
     const user = await Users.findByEmail(req.body.email);
     const isValidPassword = await user?.isValidPassword(req.body.password);
-    if (!user || !isValidPassword) {
+    if (!user || !isValidPassword || !user.verify) {
       return res.status(HttpCode.UNAUTHORIZATED).json({
         status: "error",
         code: HttpCode.UNAUTHORIZATED,
@@ -113,7 +131,7 @@ const updateSubscription = async (req, res, next) => {
   }
 };
 
-const avatars = async (req, res, next) => {
+const avatarService = async (req, res, next) => {
   try {
     const id = req.user.id
     const uploads = new UploadAvatarService(process.env.AVATAR_OF_USERS)
@@ -131,9 +149,63 @@ const avatars = async (req, res, next) => {
     next(error)
   }
 }
+const verify = async (req, res, next) => {
+  try {
+    const user = await Users.findByVerifyToken(req.params.token)
+    if (user) {
+      await Users.updateTokenVerify(user.id, true, null)
+      return res.json({
+        status: 'success',
+        code: 200,
+        data: { message: 'Verification successfull!' },
+      })
+    }
+    return res.status(HttpCode.BAD_REQUEST).json({
+      status: 'error',
+      code: HttpCode.BAD_REQUEST,
+      message: "User not found",
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 
-
-
+const repeatEmailVerification = async (req, res, next) => {
+  try {
+    
+    const { email } = req.body;
+     const user = await Users.findByEmail(email)
+    
+    if (user) {
+      const {name, email, verify, verifyToken } = user
+      if (!verify) {
+        const emailService = new EmailService(
+          process.env.NODE_ENV,
+          new CreateSenderSendGrid(),
+        )
+     
+        await emailService.sendVerifyEmail(verifyToken, email, name)
+        return res.json({
+          status: 'success',
+          code: 200,
+          data: { message: 'Resubmitted success!' },
+        })
+      }
+      return res.status(HttpCode.CONFLICT).json({
+        status: 'error',
+        code: HttpCode.CONFLICT,
+        message: 'Email has been verified',
+      })
+    }
+    return res.status(HttpCode.NOT_FOUND).json({
+      status: 'error',
+      code: HttpCode.NOT_FOUND,
+      message: 'User not found',
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 
 module.exports = {
   register,
@@ -141,6 +213,7 @@ module.exports = {
   logout,
   current,
   updateSubscription,
-  avatars
-
-};
+  avatarService,
+  verify,
+  repeatEmailVerification,
+  };

@@ -13,6 +13,10 @@ router.get('/current', guard, contrls.current);
 router.patch('/', guard, validationSubscription, contrls.updateSubscription);
 router.patch('/avatars', guard, upload.single('avatar'), contrls.avatarService)
 
+router.get('/verify/:verificationToken', contrls.verify)
+router.post('/verify', contrls.repeatEmailVerification)
+
+
 
 module.exports = router
 
