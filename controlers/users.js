@@ -16,7 +16,9 @@ const SECRET_KEY = process.env.SECRET_KEY;
 const register = async (req, res, next) => {
   try {
     const user = await Users.findByEmail(req.body.email);
+   
     if (user) {
+     
       return res.status(HttpCode.CONFLICT).json({
         status: "error",
         code: HttpCode.CONFLICT,
@@ -170,24 +172,19 @@ const verify = async (req, res, next) => {
 
 const repeatEmailVerification = async (req, res, next) => {
   try {
-    const user = await Users.findByEmail(req.body.email)
+    
+    const { email } = req.body;
+     const user = await Users.findByEmail(email)
+    
     if (user) {
-      const {  email, verify, verifyToken } = user
+      const {name, email, verify, verifyToken } = user
       if (!verify) {
         const emailService = new EmailService(
           process.env.NODE_ENV,
           new CreateSenderSendGrid(),
         )
-
-      //   const emailService = new EmailService(
-      //     process.env.NODE_ENV,
-      //     new CreateSenderSendGrid(),
-      //   )
-      //   await emailService.sendVerifyEmail(verifyToken, email)
-      // } catch (error) {
-      //   console.log(error.message)
-      // }
-        await emailService.sendVerifyEmail(verifyToken, email)
+     
+        await emailService.sendVerifyEmail(verifyToken, email, name)
         return res.json({
           status: 'success',
           code: 200,
@@ -209,8 +206,6 @@ const repeatEmailVerification = async (req, res, next) => {
     next(error)
   }
 }
-
-
 
 module.exports = {
   register,
